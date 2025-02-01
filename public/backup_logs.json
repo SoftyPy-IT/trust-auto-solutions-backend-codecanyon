@@ -1,0 +1,11 @@
+[
+  {
+    "status": "failed",
+    "error": "Command failed: mongodump --db=trust-auto-solutions --archive=D:\\softypy\\trust-auto-solution\\trust-auto-solution-server\\public\\trust-auto-solutions.gzip --gzip\n'mongodump' is not recognized as an internal or external command,\r\noperable program or batch file.\r\n",
+    "code": null,
+    "signal": null,
+    "backupStartTime": "2025-01-26T18:00:00.264Z",
+    "backupEndTime": "2025-01-26T18:00:00.290Z",
+    "archivePath": "D:\\softypy\\trust-auto-solution\\trust-auto-solution-server\\public\\trust-auto-solutions.gzip"
+  }
+]
