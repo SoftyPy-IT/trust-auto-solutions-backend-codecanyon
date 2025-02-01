@@ -36,27 +36,29 @@ jobs:
 
       - name: Clean VPS Directory
         run: |
-          sshpass -p '${{ secrets.SSH_PASSWORD }}' ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
-            rm -rf /var/www/html/trust-auto-solution/code-canyon-api/*"
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            rm -rf /var/www/html/trust-auto-solution/code-canyon-api/*
+          EOF
 
       - name: Copy .env.example to .env securely
         run: |
-          sshpass -p '${{ secrets.SSH_PASSWORD }}' rsync -avz --delete ./.env.example ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/trust-auto-solution/code-canyon-api/.env
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync -avz --delete ./.env.example ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/trust-auto-solution/code-canyon-api/.env
 
       - name: Deploy to VPS
         run: |
           mkdir -p ~/.ssh
           echo -e "Host ${{ secrets.SSH_HOST }}\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
 
-          sshpass -p '${{ secrets.SSH_PASSWORD }}' rsync -avz --delete ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/trust-auto-solution/code-canyon-api/dist/
-          sshpass -p '${{ secrets.SSH_PASSWORD }}' rsync -avz --delete ./node_modules/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/trust-auto-solution/code-canyon-api/node_modules/
-          sshpass -p '${{ secrets.SSH_PASSWORD }}' rsync -avz --delete ./package.json ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/trust-auto-solution/code-canyon-api/package.json
-          sshpass -p '${{ secrets.SSH_PASSWORD }}' rsync -avz --delete ./public/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/trust-auto-solution/code-canyon-api/public
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync -avz --delete ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/trust-auto-solution/code-canyon-api/dist/
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync -avz --delete ./node_modules/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/trust-auto-solution/code-canyon-api/node_modules/
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync -avz --delete ./package.json ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/trust-auto-solution/code-canyon-api/package.json
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync -avz --delete ./public/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/trust-auto-solution/code-canyon-api/public
 
       - name: Restart PM2 Service
         run: |
-          sshpass -p '${{ secrets.SSH_PASSWORD }}' ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
-            cd /var/www/html/trust-auto-solution/code-canyon-api &&
-            pm2 stop trust-auto-solutions-backend-codecanyon || true &&
-            pm2 start dist/server.js --name trust-auto-solutions-backend-codecanyon --update-env --env production &&
-            pm2 save"
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            cd /var/www/html/trust-auto-solution/code-canyon-api
+            pm2 stop trust-auto-solutions-backend-codecanyon || true
+            pm2 start dist/server.js --name trust-auto-solutions-backend-codecanyon --update-env --env production
+            pm2 save
+          EOF
