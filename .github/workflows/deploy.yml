@@ -57,6 +57,6 @@ jobs:
         run: |
           sshpass -p '${{ secrets.SSH_PASSWORD }}' ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
             cd /var/www/html/trust-auto-solution/code-canyon-api &&
-            pm2 stop trust-auto-server || true &&
-            pm2 start dist/server.js --name trust-auto-server --update-env --env production &&
+            pm2 stop trust-auto-solutions-backend-codecanyon || true &&
+            pm2 start dist/server.js --name trust-auto-solutions-backend-codecanyon --update-env --env production &&
             pm2 save"
