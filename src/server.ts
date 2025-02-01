@@ -12,11 +12,11 @@ async function main() {
     console.log('Database connection successful.');
 
     server = app.listen(config.port, () => {
-      console.log(`Trust Auto Solution is listening on port ${config.port}`);
+      console.log(`trust-auto-solutions-backend-codcanyon is listening on port ${config.port}`);
     });
   } catch (err) {
     console.error('Error starting the server:', err);
-    process.exit(1); // Exit immediately if an error occurs during startup
+    process.exit(1); 
   }
 }
 

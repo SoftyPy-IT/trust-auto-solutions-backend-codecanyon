@@ -1,0 +1,62 @@
+name: Deploy Node.js Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the TypeScript project
+        run: npm run build
+
+      - name: Verify build output
+        run: |
+          if [ ! -f dist/server.js ]; then
+            echo "Build failed: dist/server.js not found"
+            exit 1
+          fi
+
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+
+      - name: Clean VPS Directory
+        run: |
+          sshpass -p '${{ secrets.SSH_PASSWORD }}' ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+            rm -rf /var/www/html/trust-auto-solution/code-canyon-api/*"
+
+      - name: Copy .env.example to .env securely
+        run: |
+          sshpass -p '${{ secrets.SSH_PASSWORD }}' rsync -avz --delete ./.env.example ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/trust-auto-solution/code-canyon-api/.env
+
+      - name: Deploy to VPS
+        run: |
+          mkdir -p ~/.ssh
+          echo -e "Host ${{ secrets.SSH_HOST }}\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+
+          sshpass -p '${{ secrets.SSH_PASSWORD }}' rsync -avz --delete ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/trust-auto-solution/code-canyon-api/dist/
+          sshpass -p '${{ secrets.SSH_PASSWORD }}' rsync -avz --delete ./node_modules/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/trust-auto-solution/code-canyon-api/node_modules/
+          sshpass -p '${{ secrets.SSH_PASSWORD }}' rsync -avz --delete ./package.json ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/trust-auto-solution/code-canyon-api/package.json
+          sshpass -p '${{ secrets.SSH_PASSWORD }}' rsync -avz --delete ./public/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/trust-auto-solution/code-canyon-api/public
+
+      - name: Restart PM2 Service
+        run: |
+          sshpass -p '${{ secrets.SSH_PASSWORD }}' ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+            cd /var/www/html/trust-auto-solution/code-canyon-api &&
+            pm2 stop trust-auto-server || true &&
+            pm2 start dist/server.js --name trust-auto-server --update-env --env production &&
+            pm2 save"
